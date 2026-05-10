@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Smart BMI India</title>
+
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+
+  <!-- Chart JS -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, #1e293b, #0f172a 40%),
+        linear-gradient(135deg, #020617, #111827);
+      color: white;
+      padding: 30px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: auto;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header h1 {
+      font-size: 4rem;
+      font-weight: 900;
+      background: linear-gradient(90deg, #f97316, #22c55e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      color: #cbd5e1;
+      font-size: 1.1rem;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 30px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 28px;
+      padding: 28px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .card h2 {
+      margin-bottom: 25px;
+      font-size: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #f8fafc;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 14px;
+      outline: none;
+      background: #1e293b;
+      color: white;
+      font-size: 1rem;
+    }
+
+    input[type="range"] {
+      accent-color: #22c55e;
+      padding: 0;
+    }
+
+    .range-value {
+      margin-top: 8px;
+      color: #22c55e;
+      font-weight: 700;
+    }
+
+    .result-card {
+      border-radius: 28px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 25px;
+      transition: 0.3s ease;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .bmi-value {
+      font-size: 5rem;
+      font-weight: 900;
+      margin-bottom: 10px;
+    }
+
+    .bmi-category {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 15px;
+    }
+
+    .advice {
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+      margin-top: 25px;
+    }
+
+    canvas {
+      width: 100% !important;
+      max-height: 350px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 25px;
+    }
+
+    .metric-card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 22px;
+      padding: 24px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .metric-card h3 {
+      color: #94a3b8;
+      margin-bottom: 12px;
+      font-size: 1rem;
+    }
+
+    .metric-card p {
+      font-size: 1.6rem;
+      font-weight: 800;
+    }
+
+    .tips {
+      margin-top: 30px;
+    }
+
+    .tips ul {
+      padding-left: 20px;
+      margin-top: 15px;
+    }
+
+    .tips li {
+      margin-bottom: 14px;
+      line-height: 1.7;
+      color: #e2e8f0;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 50px;
+      color: #94a3b8;
+    }
+
+    @media(max-width:1100px) {
+
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .chart-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .header h1 {
+        font-size: 2.8rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <!-- HEADER -->
+    <div class="header">
+      <h1>🇮🇳 Smart BMI India</h1>
+      <p>Modern BMI Dashboard Based on WHO International Standards</p>
+    </div>
+
+    <div class="main-grid">
+
+      <!-- LEFT PANEL -->
+      <div class="card">
+
+        <h2>👤 Personal Information</h2>
+
+        <div class="form-group">
+          <label>Gender</label>
+          <select id="gender">
+            <option>Male</option>
+            <option>Female</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Age</label>
+          <input type="range" min="10" max="80" value="24" id="age">
+          <div class="range-value">
+            <span id="ageValue">24</span> years
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Height</label>
+          <input type="range" min="100" max="220" value="170" id="height">
+          <div class="range-value">
+            <span id="heightValue">170</span> cm
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Weight</label>
+          <input type="range" min="20" max="200" value="70" id="weight">
+          <div class="range-value">
+            <span id="weightValue">70</span> kg
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Activity Level</label>
+          <select id="activity">
+            <option>Sedentary</option>
+            <option>Lightly Active</option>
+            <option>Moderately Active</option>
+            <option>Very Active</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- RIGHT PANEL -->
+      <div>
+
+        <!-- BMI RESULT -->
+        <div class="result-card" id="resultCard">
+
+          <div class="bmi-value" id="bmiValue">24.2</div>
+
+          <div class="bmi-category" id="bmiCategory">
+            Normal
+          </div>
+
+          <div class="advice" id="bmiAdvice">
+            Excellent! Maintain your healthy lifestyle.
+          </div>
+
+        </div>
+
+        <!-- CHARTS -->
+        <div class="chart-grid">
+
+          <div class="card">
+            <h2>📊 BMI Classification</h2>
+            <canvas id="bmiChart"></canvas>
+          </div>
+
+          <div class="card">
+            <h2>⚖ Healthy Weight Range</h2>
+            <canvas id="weightChart"></canvas>
+          </div>
+
+        </div>
+
+        <!-- METRICS -->
+        <div class="metric-grid">
+
+          <div class="metric-card">
+            <h3>⚡ BMR</h3>
+            <p id="bmrValue">0 kcal</p>
+          </div>
+
+          <div class="metric-card">
+            <h3>🍛 Maintenance</h3>
+            <p id="maintenanceValue">0 kcal</p>
+          </div>
+
+          <div class="metric-card">
+            <h3>🎯 Healthy BMI</h3>
+            <p>18.5 - 24.9</p>
+          </div>
+
+        </div>
+
+        <!-- HEALTH TIPS -->
+        <div class="card tips">
+
+          <h2>💡 Health Tips</h2>
+
+          <ul>
+            <li>🥗 Include protein-rich foods like dal, paneer, eggs and sprouts.</li>
+            <li>🚶 Walk at least 8,000 steps daily.</li>
+            <li>💧 Drink 2-3 liters of water every day.</li>
+            <li>🛌 Maintain consistent sleep schedule.</li>
+            <li>🏋️ Include strength training 3 times per week.</li>
+            <li>🍟 Reduce ultra-processed foods and sugary drinks.</li>
+          </ul>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="footer">
+      Built with ❤️ using HTML, CSS & JavaScript
+    </div>
+
+  </div>
+
+  <script>
+
+    // =========================
+    // ELEMENTS
+    // =========================
+
+    const age = document.getElementById("age");
+    const height = document.getElementById("height");
+    const weight = document.getElementById("weight");
+
+    const ageValue = document.getElementById("ageValue");
+    const heightValue = document.getElementById("heightValue");
+    const weightValue = document.getElementById("weightValue");
+
+    const gender = document.getElementById("gender");
+    const activity = document.getElementById("activity");
+
+    const bmiValue = document.getElementById("bmiValue");
+    const bmiCategory = document.getElementById("bmiCategory");
+    const bmiAdvice = document.getElementById("bmiAdvice");
+
+    const resultCard = document.getElementById("resultCard");
+
+    const bmrValue = document.getElementById("bmrValue");
+    const maintenanceValue = document.getElementById("maintenanceValue");
+
+    // =========================
+    // BMI PIE CHART
+    // =========================
+
+    const bmiChart = new Chart(
+      document.getElementById("bmiChart"),
+      {
+        type: "doughnut",
+        data: {
+          labels: [
+            "Severe Thinness",
+            "Moderate Thinness",
+            "Mild Thinness",
+            "Normal",
+            "Overweight",
+            "Obese I",
+            "Obese II",
+            "Obese III"
+          ],
+
+          datasets: [{
+            data: [16, 17, 18.5, 25, 30, 35, 40, 45],
+
+            backgroundColor: [
+              "#1d4ed8",
+              "#2563eb",
+              "#60a5fa",
+              "#22c55e",
+              "#f59e0b",
+              "#f97316",
+              "#ef4444",
+              "#991b1b"
+            ],
+
+            borderWidth: 0
+          }]
+        },
+
+        options: {
+          responsive: true,
+
+          plugins: {
+            legend: {
+              labels: {
+                color: "white"
+              }
+            }
+          }
+        }
+      }
+    );
+
+    // =========================
+    // WEIGHT BAR CHART
+    // =========================
+
+    const weightChart = new Chart(
+      document.getElementById("weightChart"),
+      {
+        type: "bar",
+
+        data: {
+          labels: [
+            "Current",
+            "Min Healthy",
+            "Max Healthy"
+          ],
+
+          datasets: [{
+            label: "Weight (kg)",
+            data: [70, 55, 72],
+            backgroundColor: [
+              "#22c55e",
+              "#3b82f6",
+              "#f59e0b"
+            ],
+            borderRadius: 12
+          }]
+        },
+
+        options: {
+          responsive: true,
+
+          scales: {
+            y: {
+              ticks: {
+                color: "white"
+              },
+              grid: {
+                color: "rgba(255,255,255,0.1)"
+              }
+            },
+
+            x: {
+              ticks: {
+                color: "white"
+              },
+              grid: {
+                display: false
+              }
+            }
+          },
+
+          plugins: {
+            legend: {
+              labels: {
+                color: "white"
+              }
+            }
+          }
+        }
+      }
+    );
+
+    // =========================
+    // UPDATE BMI FUNCTION
+    // =========================
+
+    function updateBMI() {
+
+      ageValue.innerText = age.value;
+      heightValue.innerText = height.value;
+      weightValue.innerText = weight.value;
+
+      const h = height.value / 100;
+      const w = parseFloat(weight.value);
+
+      const bmi = (w / (h * h)).toFixed(1);
+
+      bmiValue.innerText = bmi;
+
+      let category = "";
+      let color = "";
+      let advice = "";
+
+      // WHO BMI CLASSIFICATION
+
+      if (bmi < 16) {
+
+        category = "Severe Thinness";
+        color = "#1d4ed8";
+        advice = "Immediate nutritional and medical attention recommended.";
+
+      }
+
+      else if (bmi >= 16 && bmi < 17) {
+
+        category = "Moderate Thinness";
+        color = "#2563eb";
+        advice = "Increase healthy calorie intake and monitor nutrition.";
+
+      }
+
+      else if (bmi >= 17 && bmi < 18.5) {
+
+        category = "Mild Thinness";
+        color = "#60a5fa";
+        advice = "Slightly underweight. Focus on balanced nutrition.";
+
+      }
+
+      else if (bmi >= 18.5 && bmi < 25) {
+
+        category = "Normal";
+        color = "#22c55e";
+        advice = "Excellent! Maintain your healthy lifestyle.";
+
+      }
+
+      else if (bmi >= 25 && bmi < 30) {
+
+        category = "Overweight";
+        color = "#f59e0b";
+        advice = "Balanced diet and regular exercise recommended.";
+
+      }
+
+      else if (bmi >= 30 && bmi < 35) {
+
+        category = "Obese Class I";
+        color = "#f97316";
+        advice = "Lifestyle modifications strongly recommended.";
+
+      }
+
+      else if (bmi >= 35 && bmi < 40) {
+
+        category = "Obese Class II";
+        color = "#ef4444";
+        advice = "High health risk. Medical supervision recommended.";
+
+      }
+
+      else {
+
+        category = "Obese Class III";
+        color = "#991b1b";
+        advice = "Critical obesity level. Consult healthcare professionals immediately.";
+
+      }
+
+      bmiCategory.innerText = category;
+      bmiAdvice.innerText = advice;
+
+      resultCard.style.background = color;
+
+      // =========================
+      // HEALTHY WEIGHT RANGE
+      // =========================
+
+      const minHealthy = (18.5 * h * h).toFixed(1);
+      const maxHealthy = (24.9 * h * h).toFixed(1);
+
+      weightChart.data.datasets[0].data = [
+        w,
+        minHealthy,
+        maxHealthy
+      ];
+
+      weightChart.update();
+
+      // =========================
+      // BMR CALCULATION
+      // =========================
+
+      let bmr;
+
+      if (gender.value === "Male") {
+
+        bmr = 10 * w + 6.25 * height.value - 5 * age.value + 5;
+
+      } else {
+
+        bmr = 10 * w + 6.25 * height.value - 5 * age.value - 161;
+
+      }
+
+      const activityMap = {
+        "Sedentary": 1.2,
+        "Lightly Active": 1.375,
+        "Moderately Active": 1.55,
+        "Very Active": 1.725
+      };
+
+      const maintenance = Math.round(
+        bmr * activityMap[activity.value]
+      );
+
+      bmrValue.innerText =
+        Math.round(bmr) + " kcal";
+
+      maintenanceValue.innerText =
+        maintenance + " kcal";
+    }
+
+    // =========================
+    // EVENTS
+    // =========================
+
+    age.addEventListener("input", updateBMI);
+    height.addEventListener("input", updateBMI);
+    weight.addEventListener("input", updateBMI);
+
+    gender.addEventListener("change", updateBMI);
+    activity.addEventListener("change", updateBMI);
+
+    // INITIAL LOAD
+    updateBMI();
+
+  </script>
+
+</body>
+
+</html>
